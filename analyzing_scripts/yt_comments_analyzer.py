@@ -25,6 +25,7 @@ class CommentsAnalyzer:
         """
         current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         save_dir = os.path.join(os.path.dirname(__file__), "..", "output", "sentiment_analysis")
+        os.makedirs(save_dir, exist_ok=True)
         file_path = os.path.join(os.path.dirname(__file__), "..", "output", "comments", file_name)
         analyzed_file_path = os.path.join(save_dir, f"analyzed_comments_{current_time}")
 
@@ -44,10 +45,12 @@ class CommentsAnalyzer:
             texts = [entry["text"] for entry in comments_data]
             likes = [entry["likes"] for entry in comments_data]
             word_counts = [len(re.findall(r'\b\w+\b', text)) for text in texts]
+            unique_word_count = [len(set(re.findall(r'\b\w+\b', text.lower()))) for text in texts]
+            char_count = [len(text) for text in texts]
             sentiments = self.get_batch_sentiments(texts)
             analyzed_data = [
-                {"text": text, "likes": like, "words_amount": word_counts ,"sentiment": sentiment}
-                for text, like, word_counts, sentiment in zip(texts, likes, word_counts, sentiments)
+                {"text": text, "likes": like, "words_amount": word_counts, "unique_word_count": unique_word_count, "char_count": char_count, "sentiment": sentiment}
+                for text, like, word_counts, unique_word_count, char_count, sentiment in zip(texts, likes, word_counts, unique_word_count, char_count, sentiments)
             ]
 
             self.save_to_json(analyzed_data, f"{analyzed_file_path}.json")
@@ -109,4 +112,3 @@ class CommentsAnalyzer:
             print(f"uccessfully saved CSV file: {csv_path}")
         except Exception as e:
             print(f"Error saving CSV file: {e}")
-
