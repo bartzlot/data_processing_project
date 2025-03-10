@@ -118,13 +118,12 @@ class YouTubeCommentsFetcher:
             print(f' Error while saving comments to JSON: {e}')
 
 
-
 if __name__ == '__main__':
 
     API_KEYS = load_config()
     comments_fetcher = YouTubeCommentsFetcher(API_KEYS['YT_API_KEY'])
     video_id = YouTubeCommentsFetcher.extract_video_id('https://www.youtube.com/watch?v=64_Msnda8ZU')
-    comments = comments_fetcher.fetch_comments(video_id, max_results=20)
+    comments = comments_fetcher.fetch_comments(video_id, max_results=100)
     YouTubeCommentsFetcher.save_comments_to_json(comments)
 
     

@@ -1,7 +1,7 @@
 import os
 import json
 import re
-import requests
+import pandas as pd
 from datetime import datetime
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -26,7 +26,7 @@ class CommentsAnalyzer:
         current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         save_dir = os.path.join(os.path.dirname(__file__), "..", "output", "sentiment_analysis")
         file_path = os.path.join(os.path.dirname(__file__), "..", "output", "comments", file_name)
-        analyzed_file_path = os.path.join(save_dir, f"analyzed_comments_{current_time}.json")
+        analyzed_file_path = os.path.join(save_dir, f"analyzed_comments_{current_time}")
 
         if not os.path.exists(file_path):
             print("Error: comments.json file not found.")
@@ -43,15 +43,15 @@ class CommentsAnalyzer:
 
             texts = [entry["text"] for entry in comments_data]
             likes = [entry["likes"] for entry in comments_data]
+            word_counts = [len(re.findall(r'\b\w+\b', text)) for text in texts]
             sentiments = self.get_batch_sentiments(texts)
-            print(sentiments)
             analyzed_data = [
-                {"text": text, "likes": like, "sentiment": sentiment}
-                for text, like, sentiment in zip(texts, likes, sentiments)
+                {"text": text, "likes": like, "words_amount": word_counts ,"sentiment": sentiment}
+                for text, like, word_counts, sentiment in zip(texts, likes, word_counts, sentiments)
             ]
 
-            with open(analyzed_file_path, 'w', encoding='utf-8') as file:
-                json.dump(analyzed_data, file, indent=4, ensure_ascii=False)
+            self.save_to_json(analyzed_data, f"{analyzed_file_path}.json")
+            self.save_to_csv(analyzed_data, f"{analyzed_file_path}.csv")
 
             print(f'Sentiment analysis saved to {analyzed_file_path}')
         except Exception as e:
@@ -83,6 +83,30 @@ class CommentsAnalyzer:
             4: "Positive",
             5: "Very Positive"
         }
-
         sentiments = [sentiment_labels.get(rating, "Error") for rating in star_ratings]
         return sentiments
+
+
+    def save_to_json(self, analyzed_data, json_path):
+        """
+        Saves the analyzed data to a JSON file.
+        """
+        try:
+            with open(json_path, 'w', encoding='utf-8') as file:
+                json.dump(analyzed_data, file, indent=4, ensure_ascii=False)
+            print(f"Successfully saved JSON file: {json_path}")
+        except Exception as e:
+            print(f"Error saving JSON file: {e}")
+
+
+    def save_to_csv(self, analyzed_data, csv_path):
+        """
+        Saves the analyzed data to a CSV file.
+        """
+        try:
+            df = pd.DataFrame(analyzed_data)
+            df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+            print(f"uccessfully saved CSV file: {csv_path}")
+        except Exception as e:
+            print(f"Error saving CSV file: {e}")
+
