@@ -2,7 +2,6 @@ import os
 import json
 import re
 import pandas as pd
-from datetime import datetime
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -23,11 +22,10 @@ class CommentsAnalyzer:
         """
         Reads comments from a JSON file, analyzes their sentiment using OpenRouter API, and saves the results.
         """
-        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         save_dir = os.path.join(os.path.dirname(__file__), "..", "output", "sentiment_analysis")
         os.makedirs(save_dir, exist_ok=True)
         file_path = os.path.join(os.path.dirname(__file__), "..", "output", "comments", file_name)
-        analyzed_file_path = os.path.join(save_dir, f"analyzed_comments_{current_time}")
+        analyzed_file_path = os.path.join(save_dir, f"analyzed_{os.path.splitext(os.path.basename(file_name))[0]}")
 
         if not os.path.exists(file_path):
             print("Error: comments.json file not found.")
@@ -53,7 +51,7 @@ class CommentsAnalyzer:
                 for text, like, word_counts, unique_word_count, char_count, sentiment in zip(texts, likes, word_counts, unique_word_count, char_count, sentiments)
             ]
 
-            self.save_to_json(analyzed_data, f"{analyzed_file_path}.json")
+            # self.save_to_json(analyzed_data, f"{analyzed_file_path}.json")
             self.save_to_csv(analyzed_data, f"{analyzed_file_path}.csv")
 
             print(f'Sentiment analysis saved to {analyzed_file_path}')
@@ -108,7 +106,7 @@ class CommentsAnalyzer:
         """
         try:
             df = pd.DataFrame(analyzed_data)
-            df.to_csv(csv_path, index=False, encoding='utf-8-sig')
-            print(f"uccessfully saved CSV file: {csv_path}")
+            df.to_csv(csv_path, index=False, encoding='utf-8-sig', sep=";")
+            print(f"✅ Successfully saved CSV file: {csv_path}")
         except Exception as e:
-            print(f"Error saving CSV file: {e}")
+            print(f"❌ Error saving CSV file: {e}")
