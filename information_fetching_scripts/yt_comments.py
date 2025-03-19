@@ -92,22 +92,20 @@ class YouTubeCommentsFetcher:
                 break
 
         return comments
-    
 
     @staticmethod
-    def save_comments_to_json(comments: list):
+    def save_comments_to_json(comments: list, id: int):
         """
-        Saves the fetched comments to a JSON file with a timestamp.
-        
+        Saves the fetched comments to a JSON file with a given ID.
+
         :param comments: List of comments
+        :param id: ID for the file name
         """
 
-        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        file_name = f"comments_{current_time}.json"
+        file_name = f"comments_{id}.json"
         save_path = os.path.join(os.path.dirname(__file__), "..", "output", "comments", file_name)
 
         try:
-
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
             with open(save_path, 'w', encoding='utf-8') as file:
@@ -115,16 +113,31 @@ class YouTubeCommentsFetcher:
 
             print(f'Comments saved to {save_path}')
         except Exception as e:
-            print(f' Error while saving comments to JSON: {e}')
+            print(f'Error while saving comments to JSON: {e}')
 
+def read_links_from_file(file_path: str) -> list:
+    """
+    Reads video links from the provided text file.
+    :param file_path: Path to the text file containing the links
+    :return: List of YouTube video links
+    """
+    links = []
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            links = [line.strip() for line in file.readlines()]
+    except Exception as e:
+        print(f"Error reading links from file: {e}")
+    return links
 
 if __name__ == '__main__':
-
     API_KEYS = load_config()
     comments_fetcher = YouTubeCommentsFetcher(API_KEYS['YT_API_KEY'])
-    video_id = YouTubeCommentsFetcher.extract_video_id('https://www.youtube.com/watch?v=64_Msnda8ZU')
-    comments = comments_fetcher.fetch_comments(video_id, max_results=100)
-    YouTubeCommentsFetcher.save_comments_to_json(comments)
 
-    
+    links_file_path = os.path.join(os.path.dirname(__file__), "..", "info_data", "linki.txt")
+    video_links = read_links_from_file(links_file_path)
 
+    # Fetch comments for each video link and save them to separate JSON files
+    for idx, video_url in enumerate(video_links, start=1):
+        video_id = YouTubeCommentsFetcher.extract_video_id(video_url)
+        comments = comments_fetcher.fetch_comments(video_id, max_results=100)
+        YouTubeCommentsFetcher.save_comments_to_json(comments, id=idx)
