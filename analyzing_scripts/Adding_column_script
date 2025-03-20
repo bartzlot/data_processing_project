@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-base_dir = r"d:\Users\SUPERKOMP\Desktop\Studia\sem6\Przetwarzanie_danych\data_processing_project\output\sentiment_analysis"
+base_dir = r""
 
 for folder_name in os.listdir(base_dir):
     folder_path = os.path.join(base_dir, folder_name)
@@ -11,12 +11,12 @@ for folder_name in os.listdir(base_dir):
         
         for file_name in os.listdir(folder_path):
             if file_name.endswith(".csv"):
-
                 file_path = os.path.join(folder_path, file_name)
                 
-                df = pd.read_csv(file_path, sep=";")  # Sprawdź separator! Może być "," zamiast ";"
-                df["video_date"] = year
+                df = pd.read_csv(file_path, sep=";") 
+                
+                df["video_date"] = year  
                 
                 df.to_csv(file_path, index=False, sep=";", encoding="utf-8-sig")
                 
-                print(f"✅ Dodano 'video_date' do {file_name} w folderze {year}")
+                print(f"✅ Updated 'video_date' in {file_name} in folder {year}")
