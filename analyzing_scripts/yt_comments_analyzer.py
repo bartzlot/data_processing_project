@@ -107,6 +107,6 @@ class CommentsAnalyzer:
         try:
             df = pd.DataFrame(analyzed_data)
             df.to_csv(csv_path, index=False, encoding='utf-8-sig', sep=";")
-            print(f"✅ Successfully saved CSV file: {csv_path}")
+            print(f"Successfully saved CSV file: {csv_path}")
         except Exception as e:
-            print(f"❌ Error saving CSV file: {e}")
+            print(f"Error saving CSV file: {e}")
